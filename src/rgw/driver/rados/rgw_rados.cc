@@ -4046,6 +4046,12 @@ int RGWRados::fetch_remote_obj(RGWObjectCtx& obj_ctx,
     cb.get_attrs()[RGW_ATTR_COMPRESSION] = tmp;
   }
 
+  if (zones_trace) { // add replication trace
+    bufferlist bl;
+    encode(*zones_trace, bl);
+    cb.get_attrs()[RGW_ATTR_OBJ_REPLICATION_TRACE] = std::move(bl);
+  } 
+
   if (override_owner) {
     processor.set_owner(*override_owner);
 
