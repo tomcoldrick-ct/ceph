@@ -3797,7 +3797,7 @@ int RGWRados::stat_remote_obj(const DoutPrefixProvider *dpp,
   int ret = conn->get_obj(dpp, user_id, info, src_obj, pmod, unmod_ptr,
                       dest_mtime_weight.zone_short_id, dest_mtime_weight.pg_ver,
                       prepend_meta, get_op, rgwx_stat,
-                      sync_manifest, skip_decrypt,
+		      sync_manifest, skip_decrypt, nullptr,
                       true, &cb, &in_stream_req);
   if (ret < 0) {
     return ret;
@@ -3993,6 +3993,8 @@ int RGWRados::fetch_remote_obj(RGWObjectCtx& obj_ctx,
 
   obj_time_weight dest_mtime_weight;
 
+  rgw_zone_set_entry *dst_zone_trace = new rgw_zone_set_entry {svc.zone->get_zone().id, dest_bucket_info.bucket.get_key()};
+
   if (copy_if_newer) {
     /* need to get mtime for destination */
     ret = get_obj_state(dpp, &obj_ctx, dest_bucket_info, dest_obj, &dest_state, &manifest, false, null_yield);
@@ -4013,7 +4015,7 @@ int RGWRados::fetch_remote_obj(RGWObjectCtx& obj_ctx,
   ret = conn->get_obj(dpp, user_id, info, src_obj, pmod, unmod_ptr,
                       dest_mtime_weight.zone_short_id, dest_mtime_weight.pg_ver,
                       prepend_meta, get_op, rgwx_stat,
-                      sync_manifest, skip_decrypt,
+                      sync_manifest, skip_decrypt, dst_zone_trace,
                       true,
                       &cb, &in_stream_req);
   if (ret < 0) {
@@ -4050,7 +4052,7 @@ int RGWRados::fetch_remote_obj(RGWObjectCtx& obj_ctx,
     bufferlist bl;
     encode(*zones_trace, bl);
     cb.get_attrs()[RGW_ATTR_OBJ_REPLICATION_TRACE] = std::move(bl);
-  } 
+  }
 
   if (override_owner) {
     processor.set_owner(*override_owner);
