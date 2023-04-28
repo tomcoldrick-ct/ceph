@@ -299,6 +299,10 @@ int RGWGetObj_ObjStore_S3::get_params(optional_yield y)
     skip_decrypt = s->info.args.exists(RGW_SYS_PARAM_PREFIX "skip-decrypt");
   }
 
+  // multisite sync requests contain a trace of the zones visited, which we use
+  // to ensure we don't replicate data back to where we got it
+  dest_zone_trace = s->info.args.exists(RGW_SYS_PARAM_PREFIX "destination-zone-trace");
+
   get_torrent = s->info.args.exists("torrent");
 
   return RGWGetObj_ObjStore::get_params(y);
